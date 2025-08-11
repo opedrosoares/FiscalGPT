@@ -20,7 +20,7 @@ def vetorizar_base_completa():
     
     # Importar configurações do config
     try:
-        from chatbot.config.config import OPENAI_API_KEY
+        from chatbot.config.config import OPENAI_API_KEY, CHROMA_PERSIST_DIRECTORY
         from chatbot.core.vector_store import VectorStoreANTAQ
     except ImportError as e:
         print(f"❌ Erro ao importar configurações do chatbot: {e}")
@@ -33,7 +33,7 @@ def vetorizar_base_completa():
     
     # Inicializar vector store
     print("🚀 Inicializando VectorStore...")
-    vs = VectorStoreANTAQ(OPENAI_API_KEY)
+    vs = VectorStoreANTAQ(OPENAI_API_KEY, persist_directory=str(CHROMA_PERSIST_DIRECTORY))
     
     # Caminho para o arquivo parquet
     parquet_path = "shared/data/normas_antaq_completo.parquet"

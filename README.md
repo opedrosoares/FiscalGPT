@@ -1,10 +1,10 @@
-# Chatbot de Normas - SophiaBot
+# Chatbot de Normas - FiscalGPT
 
 Sistema completo para extração de dados e consultas inteligentes sobre normas da ANTAQ (Agência Nacional de Transportes Aquaviários).
 
 ## 📋 Visão Geral
 
-O projeto Sophia é dividido em dois módulos principais:
+O projeto FiscalGPT é dividido em dois módulos principais:
 
 - **🔄 Extração**: Sistema robusto para scraping e processamento de normas do site da ANTAQ
 - **🤖 Chatbot**: Interface inteligente para consultas usando técnicas RAG (Retrieval-Augmented Generation)
@@ -12,7 +12,7 @@ O projeto Sophia é dividido em dois módulos principais:
 ## 📁 Estrutura do Projeto
 
 ```
-SophiaBot/
+FiscalGPT/
 ├── extracao/                         # 📥 Módulo de extração de dados
 │   ├── core/                         # Funcionalidades principais
 │   │   ├── extrator.py              # Motor de extração principal
@@ -89,8 +89,8 @@ SophiaBot/
 
 ```bash
 # Clonar repositório
-git clone https://github.com/opedrosoares/SophiaBot.git
-cd SophiaBot
+git clone https://github.com/opedrosoares/FiscalGPT.git
+cd FiscalGPT
 
 # Instalar dependências base
 pip install -r requirements/base.txt

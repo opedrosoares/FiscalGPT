@@ -5,7 +5,7 @@ Processa todos os anos desde 2002 até 2025
 ATENÇÃO: Este processo pode demorar 12-24 horas ou mais
 """
 
-from Scrap import SophiaANTAQScraper
+from extracao.sophia_web.core.extrator import SophiaANTAQScraper
 import time
 import os
 from datetime import datetime

@@ -4,7 +4,7 @@ Script para executar extração completa de todas as normas ANTAQ
 ATENÇÃO: Este processo pode demorar várias horas
 """
 
-from Scrap import SophiaANTAQScraper
+from extracao.sophia_web.core.extrator import SophiaANTAQScraper
 import time
 import os
 

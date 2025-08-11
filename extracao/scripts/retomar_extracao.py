@@ -2,7 +2,7 @@
 import sys
 sys.path.append('.')
 from executar_completo_historico import main as main_historico
-from executar_completo_historico import SophiaANTAQScraper
+from extracao.sophia_web.core.extrator import SophiaANTAQScraper
 import os
 import time
 
@@ -14,7 +14,7 @@ print(f"⏱️  Estimativa: {len(anos_restantes) * 0.5:.1f} horas")
 
 # Executa a extração
 if __name__ == "__main__":
-    from Scrap import SophiaANTAQScraper
+    from extracao.sophia_web.core.extrator import SophiaANTAQScraper
     import pandas as pd
     from datetime import datetime
     

@@ -16,12 +16,12 @@
 
 /* Estilos adicionais para melhorar a aparência */
 .main-header {
-    background: linear-gradient(90deg, #1f4e79 0%, #2c5f8a 100%);
+    background: linear-gradient(90deg, #e4f2ff 0%, #c5d6e5 100%);
     padding: 1rem;
     border-radius: 10px;
     margin-bottom: 2rem;
     text-align: center;
-    color: white;
+    color: #105268;
 }
 
 .metric-card {
@@ -45,3 +45,22 @@
     background-color: #e9ecef;
     border-color: #1f4e79;
 } 
+
+/* Botões de feedback lado a lado e sem borda */
+.stChatMessage div[class*="st-key-feedback_userchat_"] {
+    flex-flow: row;
+}
+.stChatMessage div[class*="st-key-feedback_userchat_"] button[kind="secondary"] {
+    display: inline-flex !important;
+    margin-right: .5rem;
+}
+
+.stChatMessage div[class*="st-key-feedback_userchat_"] button,
+.stChatMessage div[class*="st-key-feedback_userchat_"] .stButton > button {
+    border: none !important;
+    box-shadow: none !important;
+    background: transparent !important;
+    padding: .25rem .5rem !important;
+}
+
+.stChatMessage div[class*="st-key-feedback_userchat_"] .stButton { display: inline-block; margin-right: .25rem; }

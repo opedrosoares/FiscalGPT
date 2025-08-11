@@ -46,7 +46,7 @@ def main():
             print("Executando extração básica...")
             
             # Fallback: executar extração básica
-            from extracao.core.extrator import ExtratorANTAQ
+            from extracao.sophia_web.core.extrator import SophiaANTAQScraper as ExtratorANTAQ
             extrator = ExtratorANTAQ()
             extrator.executar_extracao_completa()
         

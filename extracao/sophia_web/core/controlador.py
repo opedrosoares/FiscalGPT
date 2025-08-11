@@ -185,7 +185,7 @@ print(f"⏱️  Estimativa: {{len(anos_restantes) * 0.5:.1f}} horas")
 
 # Executa a extração
 if __name__ == "__main__":
-    from Scrap import SophiaANTAQScraper
+    from extracao.sophia_web.core.extrator import SophiaANTAQScraper
     import pandas as pd
     from datetime import datetime
     
@@ -213,23 +213,23 @@ if __name__ == "__main__":
                     with open('controle_extracao.json', 'r') as f:
                         cmd = json.load(f)
                     if cmd.get('acao') in ['pausar', 'parar']:
-                        print(f"\\n🛑 Comando '{{cmd['acao']}}' recebido - parando graciosamente")
+                        print(f"\n🛑 Comando '{{cmd['acao']}}' recebido - parando graciosamente")
                         break
                 except:
                     pass
             
-            print(f"\\n📅 PROCESSANDO ANO {{ano}} ({{i}}/{{len(anos_restantes)}})")
+            print(f"\n📅 PROCESSANDO ANO {{ano}} ({{i}}/{{len(anos_restantes)}})")
             
             # Salva estado atual
             with open('estado_extracao.json', 'w') as f:
                 import json
-                json.dump({{
+                json.dump({
                     'ano_atual': ano,
                     'progresso': (i-1)/len(anos_restantes)*100,
                     'total_normas': len(existing_ids_global),
                     'status': 'executando',
                     'timestamp': datetime.now().isoformat()
-                }}, f, indent=2)
+                }, f, indent=2)
             
             try:
                 scraper.get_initial_guid()
@@ -256,20 +256,20 @@ if __name__ == "__main__":
         
         # Salva estado final
         with open('estado_extracao.json', 'w') as f:
-            json.dump({{
+            json.dump({
                 'ano_atual': anos_restantes[-1] if anos_restantes else {ano_fim},
                 'progresso': 100,
                 'total_normas': len(existing_ids_global),
                 'status': 'completo',
                 'timestamp': datetime.now().isoformat()
-            }}, f, indent=2)
+            }, f, indent=2)
         
-        print("\\n🎉 EXTRAÇÃO HISTÓRICA FINALIZADA!")
+        print("\n🎉 EXTRAÇÃO HISTÓRICA FINALIZADA!")
         
     except KeyboardInterrupt:
-        print("\\n⚠️  Extração interrompida pelo usuário")
+        print("\n⚠️  Extração interrompida pelo usuário")
     except Exception as e:
-        print(f"\\n❌ Erro geral: {{e}}")
+        print(f"\n❌ Erro geral: {{e}}")
 """
         
         # Salva e executa script de retomada
@@ -353,3 +353,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+

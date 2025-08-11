@@ -1,6 +1,6 @@
-# 🚀 Instalação do SophiaBot em CentOS 8.5.2111
+# 🚀 Instalação do FiscalGPT em CentOS 8.5.2111
 
-Guia completo para instalar e configurar o SophiaBot em servidores CentOS 8.5.2111 para produção.
+Guia completo para instalar e configurar o FiscalGPT em servidores CentOS 8.5.2111 para produção.
 
 ## 🚀 Instalação Automatizada (Recomendado)
 
@@ -8,7 +8,7 @@ Para uma instalação rápida e automatizada, use o script oficial:
 
 ```bash
 # Baixar e executar o script de instalação
-curl -O https://raw.githubusercontent.com/opedrosoares/SophiaBot/main/scripts/install_centos.sh
+curl -O https://raw.githubusercontent.com/opedrosoares/FiscalGPT/main/scripts/install_centos.sh
 chmod +x install_centos.sh
 sudo ./install_centos.sh
 ```
@@ -108,12 +108,12 @@ source sophiabot_env/bin/activate
 pip install --upgrade pip setuptools wheel
 ```
 
-## 📦 Passo 3: Instalação do SophiaBot
+## 📦 Passo 3: Instalação do FiscalGPT
 
 ```bash
 # Clonar o repositório
-git clone https://github.com/opedrosoares/SophiaBot.git
-cd SophiaBot
+git clone https://github.com/opedrosoares/FiscalGPT.git
+cd FiscalGPT
 
 # ⚠️ IMPORTANTE: Para CentOS, usar requirements específicos
 # Instalar dependências base (versões compatíveis)
@@ -192,14 +192,14 @@ sudo nano /etc/systemd/system/sophiabot.service
 
 ```ini
 [Unit]
-Description=SophiaBot ANTAQ Chatbot
+Description=FiscalGPT ANTAQ Chatbot
 After=network.target
 
 [Service]
 Type=simple
 User=sophiabot
 Group=sophiabot
-WorkingDirectory=/home/sophiabot/SophiaBot
+WorkingDirectory=/home/sophiabot/FiscalGPT
 Environment=PATH=/home/sophiabot/sophiabot_env/bin
 ExecStart=/home/sophiabot/sophiabot_env/bin/streamlit run chatbot/interface/streamlit_app.py --server.port 8501 --server.address 0.0.0.0
 Restart=always
@@ -305,10 +305,10 @@ nano /home/sophiabot/backup_sophiabot.sh
 
 ```bash
 #!/bin/bash
-# Backup do SophiaBot
+# Backup do FiscalGPT
 DATE=$(date +%Y%m%d_%H%M%S)
 BACKUP_DIR="/home/sophiabot/backups"
-SOURCE_DIR="/home/sophiabot/SophiaBot"
+SOURCE_DIR="/home/sophiabot/FiscalGPT"
 
 mkdir -p $BACKUP_DIR
 tar -czf $BACKUP_DIR/sophiabot_backup_$DATE.tar.gz -C $SOURCE_DIR .
@@ -389,8 +389,8 @@ curl http://localhost:8501
 ### Problema 4: Erro de permissões
 ```bash
 # Corrigir permissões
-sudo chown -R sophiabot:sophiabot /home/sophiabot/SophiaBot
-sudo chmod -R 755 /home/sophiabot/SophiaBot
+sudo chown -R sophiabot:sophiabot /home/sophiabot/FiscalGPT
+sudo chmod -R 755 /home/sophiabot/FiscalGPT
 ```
 
 ### Problema 5: Erro de memória insuficiente
@@ -451,8 +451,8 @@ free -h
 
 ```bash
 #!/bin/bash
-# Monitoramento do SophiaBot
-echo "=== Status do SophiaBot ==="
+# Monitoramento do FiscalGPT
+echo "=== Status do FiscalGPT ==="
 echo "Data/Hora: $(date)"
 echo "Serviço: $(systemctl is-active sophiabot)"
 echo "Porta 8501: $(netstat -tlnp | grep 8501 | wc -l) processos"
@@ -481,7 +481,7 @@ sophiabot hard nofile 65536
 sudo nano /etc/logrotate.d/sophiabot
 
 # Conteúdo:
-/home/sophiabot/SophiaBot/shared/logs/*.log {
+/home/sophiabot/FiscalGPT/shared/logs/*.log {
     daily
     missingok
     rotate 30
@@ -508,7 +508,7 @@ Se encontrar problemas durante a instalação:
 - [ ] Python 3.9+ instalado
 - [ ] Usuário sophiabot criado
 - [ ] Ambiente virtual configurado
-- [ ] SophiaBot clonado e dependências instaladas
+- [ ] FiscalGPT clonado e dependências instaladas
 - [ ] Arquivo .env configurado
 - [ ] Firewall configurado
 - [ ] Serviço systemd criado e ativo
@@ -530,6 +530,6 @@ Após a instalação bem-sucedida:
 
 ---
 
-**O SophiaBot agora deve estar funcionando em seu servidor CentOS 8.5.2111 e acessível via navegador web!**
+**O FiscalGPT agora deve estar funcionando em seu servidor CentOS 8.5.2111 e acessível via navegador web!**
 
 Para acessar: `http://seu-servidor:8501` ou `http://seu-dominio.com` (se configurou Nginx) 

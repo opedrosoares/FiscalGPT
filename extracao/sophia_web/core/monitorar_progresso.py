@@ -105,3 +105,5 @@ def monitorar_progresso():
 
 if __name__ == "__main__":
     monitorar_progresso()
+
+

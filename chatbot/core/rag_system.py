@@ -70,26 +70,35 @@ class RAGSystemANTAQ:
     
     def _create_system_prompt(self) -> str:
         """Cria o prompt do sistema"""
-        return """Você é um assistente especializado em normas da ANTAQ (Agência Nacional de Transportes Aquaviários). 
+        return """Você é um assistente especializado em informações da ANTAQ (Agência Nacional de Transportes Aquaviários),
+com base em duas fontes complementares: (1) normas e regulamentos (base Sophia/Normas ANTAQ) e (2) conteúdos do Wiki institucional (Wiki.js ANTAQ).
 
 SUAS RESPONSABILIDADES:
-• Responder perguntas sobre normas, regulamentações e legislação portuária e aquaviária
-• Fornecer informações precisas baseadas apenas no conteúdo das normas fornecidas
-• Citar sempre as normas específicas ao responder
-• Explicar conceitos técnicos de forma clara
-• Alertar quando não há informação suficiente nos documentos
+• Responder perguntas sobre normas, regulamentações e temas portuários/aquaviários
+• Usar exclusivamente o conteúdo fornecido no contexto (normas e Wiki)
+• Citar normas específicas quando a fundamentação for legal/regulatória
+• Quando a resposta vier de conteúdos Wiki, mencione o título e o caminho da página (quando disponível)
+• Explicar conceitos técnicos de forma clara e objetiva
+• Alertar quando não houver informação suficiente
 
 DIRETRIZES DE RESPOSTA:
 • Use apenas informações do contexto fornecido
-• Cite o título e código das normas relevantes
+• Para normas: cite título e código/identificador
+• Para Wiki: cite o título da página (e o caminho, se fornecido nos metadados)
 • Se não souber algo, seja honesto sobre a limitação
 • Forneça respostas estruturadas e organizadas
 • Use linguagem técnica quando apropriado, mas sempre explicativa
 
+LINKS NA RESPOSTA:
+• Inclua links clicáveis em Markdown diretamente no texto da resposta usando o formato [Título](URL)
+• Para normas (Sophia), use o link do documento (PDF) quando disponível
+• Para páginas do Wiki, use a URL da página
+• Evite citar códigos/identificadores de documentos no corpo do texto, a menos que estritamente necessário
+
 FORMATO DE RESPOSTA:
-• Resposta direta à pergunta
-• Fundamentação legal (citando normas específicas)
-• Informações complementares quando relevante
+• Resposta direta
+• Fundamentação legal (quando aplicável) citando normas
+• Informações complementares (incluindo conteúdo Wiki quando útil)
 • Links para documentos quando disponíveis
 
 Responda sempre em português brasileiro e seja preciso nas citações."""
@@ -218,6 +227,57 @@ Responda sempre em português brasileiro e seja preciso nas citações."""
             for entity in intent['entities']:
                 if entity.lower() in document or entity.lower() in title:
                     entity_bonus += 0.15
+
+            # Priorização por tipo de norma (ordem e pesos definidos pelo usuário)
+            # 1. Resolução
+            # 2. Resolução Normativa
+            # 3. Portaria
+            # 4. Instrução Normativa
+            # 5. Acórdão
+            # 6. Outros
+            # Penalidade: Termo de Autorização
+
+            def normalize(text: str) -> str:
+                try:
+                    import unicodedata
+                    return ''.join(
+                        c for c in unicodedata.normalize('NFD', text)
+                        if unicodedata.category(c) != 'Mn'
+                    ).upper()
+                except Exception:
+                    return text.upper()
+
+            def detect_doc_type(meta: Dict[str, Any]) -> str:
+                # Preferir metadado explícito, se existir
+                tipo_meta = meta.get('tipo_norma') or meta.get('tipo') or meta.get('tipo_material')
+                titulo = meta.get('titulo', '')
+                haystack = f"{str(tipo_meta or '')} || {titulo}"
+                H = normalize(haystack)
+                if 'RESOLUCAO NORMATIVA' in H:
+                    return 'Resolução Normativa'
+                if 'RESOLUCAO' in H:
+                    return 'Resolução'
+                if 'PORTARIA' in H:
+                    return 'Portaria'
+                if 'INSTRUCAO NORMATIVA' in H:
+                    return 'Instrução Normativa'
+                if 'ACORDAO' in H:
+                    return 'Acórdão'
+                if 'TERMO DE AUTORIZACAO' in H:
+                    return 'Termo de Autorização'
+                return 'Outros'
+
+            tipo_norma = detect_doc_type(result.get('metadata', {}))
+            tipo_weights = {
+                'Resolução': 0.25,
+                'Resolução Normativa': 0.20,
+                'Portaria': 0.15,
+                'Instrução Normativa': 0.10,
+                'Acórdão': 0.05,
+                'Outros': 0.00,
+                'Termo de Autorização': -0.15,
+            }
+            tipo_bonus = tipo_weights.get(tipo_norma, 0.0)
             
             # Penalty por documentos muito antigos se consulta for recente
             date_penalty = 0
@@ -233,7 +293,7 @@ Responda sempre em português brasileiro e seja preciso nas citações."""
             # Bonus por documentos em vigor
             status_bonus = 0.1 if result['metadata'].get('situacao') == 'Em vigor' else 0
             
-            final_score = base_score + category_bonus + entity_bonus + date_penalty + status_bonus
+            final_score = base_score + category_bonus + entity_bonus + tipo_bonus + date_penalty + status_bonus
             
             return max(0, min(1, final_score))  # Manter entre 0 e 1
         
@@ -262,6 +322,15 @@ Responda sempre em português brasileiro e seja preciso nas citações."""
         
         for i, result in enumerate(results, 1):
             metadata = result['metadata']
+            tipo_material = metadata.get('tipo_material', '')
+            # Construir URL canônica para a fonte
+            url = metadata.get('link_pdf', '') or 'N/A'
+            if (not url or url == 'N/A'):
+                # Tentar construir URL de Wiki a partir do caminho (assunto)
+                path = metadata.get('assunto', '') or ''
+                if isinstance(path, str) and path.strip():
+                    base = 'https://wiki.antaq.gov.br'
+                    url = f"{base}/{path.lstrip('/')}"
             
             context_part = f"""
 DOCUMENTO {i}:
@@ -270,7 +339,7 @@ Código: {metadata.get('codigo_registro', 'N/A')}
 Assunto: {metadata.get('assunto', 'N/A')}
 Data de Assinatura: {metadata.get('assinatura', 'N/A')}
 Situação: {metadata.get('situacao', 'N/A')}
-Link: {metadata.get('link_pdf', 'N/A')}
+URL: {url}
 Relevância: {result.get('relevance_score', result['similarity']):.3f}
 
 CONTEÚDO:
@@ -398,10 +467,29 @@ Algumas sugestões:
             # Preparar contexto
             context = self._format_context(reranked_results)
             
-            # Criar prompt
+            # Enriquecer a pergunta do usuário com âncoras de links (para orientar citação inline)
+            # Extraímos as top URLs do contexto e instruímos o modelo a usá-las no corpo da resposta
+            urls = []
+            try:
+                for block in context.split("\n\n"):
+                    if block.strip().startswith("DOCUMENTO "):
+                        for line in block.splitlines():
+                            if line.strip().startswith("URL:"):
+                                url_val = line.split("URL:", 1)[1].strip()
+                                if url_val and url_val != 'N/A':
+                                    urls.append(url_val)
+                urls = list(dict.fromkeys(urls))[:5]
+            except Exception:
+                urls = []
+
+            guidance = "\n\nINSTRUÇÃO DE CITAÇÃO: Ao redigir, inclua links em Markdown [Título](URL) para as fontes relevantes sempre que citar.\n"
+            if urls:
+                guidance += "URLs sugeridas: " + ", ".join(urls) + "\n"
+
+            # Criar prompt (adiciona orientação de citação)
             messages = self._create_prompt(
-                user_query, 
-                context, 
+                user_query + guidance,
+                context,
                 self.conversation_history if include_history else []
             )
             
@@ -428,7 +516,7 @@ Algumas sugestões:
             if include_history:
                 self.conversation_history.append(assistant_message)
             
-            # Preparar fontes
+            # Preparar fontes (inclui coleção de origem quando disponível)
             sources = []
             for result in reranked_results[:5]:  # Top 5 fontes
                 metadata = result['metadata']
@@ -439,6 +527,8 @@ Algumas sugestões:
                     'situacao': metadata.get('situacao', 'N/A'),
                     'assinatura': metadata.get('assinatura', 'N/A'),
                     'link_pdf': metadata.get('link_pdf', 'N/A'),
+                    'tipo_material': metadata.get('tipo_material', 'N/A'),
+                    'collection': metadata.get('collection', ''),
                     'relevance_score': result.get('relevance_score', result['similarity'])
                 })
             
@@ -507,7 +597,7 @@ Algumas sugestões:
 if __name__ == "__main__":
     # Teste básico
     try:
-        from chatbot.config.config import OPENAI_API_KEY
+        from chatbot.config.config import OPENAI_API_KEY, CHROMA_PERSIST_DIRECTORY
     except ImportError:
         print("❌ Erro ao importar configurações do chatbot")
         exit(1)
@@ -517,7 +607,7 @@ if __name__ == "__main__":
         exit(1)
     
     # Inicializar sistema
-    vector_store = VectorStoreANTAQ(OPENAI_API_KEY)
+    vector_store = VectorStoreANTAQ(OPENAI_API_KEY, persist_directory=str(CHROMA_PERSIST_DIRECTORY))
     rag_system = RAGSystemANTAQ(OPENAI_API_KEY, vector_store)
     
     # Teste de consulta

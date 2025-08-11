@@ -18,19 +18,20 @@ Exemplo de uso:
 """
 
 __version__ = "1.0.0"
-__author__ = "Equipe ANTAQ"
-__email__ = "suporte@antaq.gov.br"
+__author__ = "Equipe GPF ANTAQ"
+__email__ = "gpf@antaq.gov.br"
 
-# Imports principais
+# Imports principais (compatibilidade com reorganização dos scrapers)
 try:
-    from .core.extrator import ExtratorANTAQ
-    from .core.controlador import ControladorExtracao
-    
+    # Classes do Sophia (webscraper original)
+    from .sophia_web.core.extrator import SophiaANTAQScraper as ExtratorANTAQ  # compat
+    from .sophia_web.core.controlador import ControladorExtracao
+
     __all__ = [
         'ExtratorANTAQ',
         'ControladorExtracao'
     ]
-    
-except ImportError as e:
+
+except ImportError:
     # Durante setup, algumas dependências podem não estar disponíveis
     __all__ = []

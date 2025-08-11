@@ -32,8 +32,8 @@ class VectorStoreANTAQ:
     def __init__(
         self, 
         openai_api_key: str,
-        persist_directory: str = "./chroma_db",
-        collection_name: str = "normas_antaq",
+        persist_directory: Optional[str] = None,
+        collection_name: Optional[str] = None,
         chunk_size: int = 600,  # Reduzido para evitar erro de contexto
         chunk_overlap: int = 100  # Reduzido proporcionalmente
     ):
@@ -51,10 +51,26 @@ class VectorStoreANTAQ:
         self.openai_api_key = openai_api_key
         openai.api_key = openai_api_key
         
+        # Resolver diretório de persistência padrão para a raiz do projeto
+        if persist_directory is None:
+            try:
+                from chatbot.config.config import CHROMA_PERSIST_DIRECTORY as DEFAULT_CHROMA_DIR
+                persist_directory = str(DEFAULT_CHROMA_DIR)
+            except Exception:
+                persist_directory = str(Path(__file__).parent.parent.parent / 'chroma_db')
+
         self.persist_directory = Path(persist_directory)
         self.persist_directory.mkdir(exist_ok=True)
         
-        self.collection_name = collection_name
+        # Resolver nome da coleção; se None, tentar carregar do config, senão autodetectar
+        resolved_collection_name: Optional[str] = collection_name
+        if resolved_collection_name is None:
+            try:
+                from chatbot.config.config import COLLECTION_NAME as DEFAULT_COLLECTION_NAME
+                resolved_collection_name = DEFAULT_COLLECTION_NAME
+            except Exception:
+                resolved_collection_name = None
+        self.collection_name: Optional[str] = resolved_collection_name
         self.chunk_size = chunk_size
         self.chunk_overlap = chunk_overlap
         
@@ -67,10 +83,39 @@ class VectorStoreANTAQ:
             )
         )
         
+        # Listar coleções disponíveis
+        try:
+            self.available_collections = self.client.list_collections()
+        except Exception:
+            self.available_collections = []
+
+        # Se não foi especificada uma coleção, tentar escolher a maior
+        if self.collection_name is None and self.available_collections:
+            try:
+                counts = []
+                for c in self.available_collections:
+                    try:
+                        counts.append((c.name, c.count()))
+                    except Exception:
+                        counts.append((c.name, 0))
+                if counts:
+                    counts.sort(key=lambda x: x[1], reverse=True)
+                    self.collection_name = counts[0][0]
+            except Exception:
+                pass
+
         # Tokenizer para contagem de tokens
         self.tokenizer = tiktoken.get_encoding("cl100k_base")
         
         logger.info(f"VectorStore inicializado em: {self.persist_directory}")
+        if self.collection_name:
+            logger.info(f"Coleção ativa: {self.collection_name}")
+        else:
+            try:
+                names = [c.name for c in self.available_collections]
+                logger.info(f"Modo multi-coleção. Coleções disponíveis: {names}")
+            except Exception:
+                logger.info("Modo multi-coleção. Nenhuma coleção listada.")
     
     def _count_tokens(self, text: str) -> int:
         """Conta tokens no texto"""
@@ -225,7 +270,7 @@ class VectorStoreANTAQ:
             import traceback
             traceback.print_exc()
     
-    def load_and_process_data(self, parquet_path: str, force_rebuild: bool = False, sample_size: Optional[int] = None, incremental: bool = True) -> bool:
+    def load_and_process_data(self, parquet_path: str, force_rebuild: bool = False, sample_size: Optional[int] = None, incremental: bool = True, collection_name: Optional[str] = None) -> bool:
         """
         Carrega e processa dados do parquet para o banco vetorial
         
@@ -240,30 +285,42 @@ class VectorStoreANTAQ:
         """
         
         try:
-            # Verificar se coleção já existe
+            # Resolver coleção ativa (prioriza parâmetro explícito)
+            active_collection_name = collection_name or self.collection_name or "default"
+
+            # Verificar se a coleção ativa já existe
             collection_exists = False
             try:
-                collection = self.client.get_collection(self.collection_name)
+                collection = self.client.get_collection(active_collection_name)
                 collection_exists = True
                 if not force_rebuild:
-                    count = collection.count()
-                    logger.info(f"Coleção já existe com {count} documentos")
-            except:
-                pass
-            
+                    try:
+                        count = collection.count()
+                        logger.info(f"Coleção '{active_collection_name}' já existe com {count} documentos")
+                    except Exception:
+                        logger.info(f"Coleção '{active_collection_name}' já existe")
+            except Exception:
+                collection = None
+
+            # Forçar rebuild apenas da coleção alvo
             if force_rebuild and collection_exists:
-                logger.info("Reconstruindo banco vetorial...")
-                self.client.delete_collection(self.collection_name)
+                logger.info(f"Reconstruindo coleção '{active_collection_name}'...")
+                try:
+                    self.client.delete_collection(active_collection_name)
+                except Exception as e:
+                    logger.warning(f"Falha ao deletar coleção '{active_collection_name}': {e}")
                 collection_exists = False
-            
-            # Criar nova coleção se não existir
+                collection = None
+
+            # Criar/abrir coleção alvo
             if not collection_exists:
-                collection = self.client.create_collection(
-                    name=self.collection_name,
-                    metadata={"hnsw:space": "cosine"}
-                )
-            else:
-                collection = self.client.get_collection(self.collection_name)
+                try:
+                    collection = self.client.create_collection(
+                        name=active_collection_name,
+                        metadata={"hnsw:space": "cosine"}
+                    )
+                except Exception:
+                    collection = self.client.get_collection(active_collection_name)
             
             # Carregar dados
             logger.info(f"Carregando dados de: {parquet_path}")
@@ -278,12 +335,32 @@ class VectorStoreANTAQ:
                 df.to_parquet(parquet_path, index=False)
                 logger.info("Arquivo atualizado com coluna 'vetorizado'")
             
-            # Filtrar apenas normas em vigor com conteúdo
-            df_filtered = df[
-                (df['situacao'] == 'Em vigor') & 
-                (df['conteudo_pdf'].notna()) & 
-                (df['conteudo_pdf'].str.len() > 100)
-            ].copy()
+            # Seleção de conteúdo: se for dataset wiki_js, usar coluna 'conteudo';
+            # caso contrário, usar 'conteudo_pdf' e filtros originais.
+            is_wiki_js = 'conteudo' in df.columns and 'codigo_registro' not in df.columns
+            if is_wiki_js:
+                text_col = 'conteudo'
+                df_filtered = df[(df[text_col].notna()) & (df[text_col].astype(str).str.len() > 50)].copy()
+                # Harmonizar metadados mínimos
+                df_filtered['codigo_registro'] = df_filtered['id'].astype(str)
+                df_filtered['titulo'] = df_filtered.get('title', df_filtered.get('path', ''))
+                df_filtered['assunto'] = df_filtered.get('path', '')
+                df_filtered['situacao'] = df_filtered.get('situacao', 'N/A')
+                df_filtered['link_pdf'] = df_filtered.get('link_pdf', '')
+                # Preservar tipo_material se existir (ex.: Imports::<categoria>); senão, assumir WikiJS
+                if 'tipo_material' not in df_filtered.columns:
+                    df_filtered['tipo_material'] = 'WikiJS'
+                else:
+                    df_filtered['tipo_material'] = df_filtered['tipo_material'].fillna('WikiJS')
+                df_filtered['assinatura'] = df_filtered.get('assinatura', pd.NaT)
+                df_filtered['publicacao'] = df_filtered.get('publicacao', pd.NaT)
+            else:
+                text_col = 'conteudo_pdf'
+                df_filtered = df[
+                    (df['situacao'] == 'Em vigor') & 
+                    (df[text_col].notna()) & 
+                    (df[text_col].str.len() > 100)
+                ].copy()
             
             # Se modo incremental, filtrar apenas não vetorizadas
             if incremental and not force_rebuild:
@@ -314,22 +391,24 @@ class VectorStoreANTAQ:
                     metadata = {
                         'codigo_registro': str(row['codigo_registro']),
                         'titulo': str(row['titulo']),
-                        'autor': str(row['autor']),
-                        'assunto': str(row['assunto']),
-                        'situacao': str(row['situacao']),
-                        'link_pdf': str(row['link_pdf']),
-                        'tipo_material': str(row['tipo_material']),
+                        'autor': str(row.get('autor', '')),
+                        'assunto': str(row.get('assunto', '')),
+                        'situacao': str(row.get('situacao', '')),
+                        'link_pdf': str(row.get('link_pdf', '')),
+                        'tipo_material': str(row.get('tipo_material', '')),
+                        # Identificar a coleção de origem para a camada de interface
+                        'collection': active_collection_name,
                         'assinatura': row['assinatura'].strftime('%Y-%m-%d') if pd.notna(row['assinatura']) else 'N/A',
                         'publicacao': row['publicacao'].strftime('%Y-%m-%d') if pd.notna(row['publicacao']) else 'N/A',
-                        'tamanho_pdf': int(row['tamanho_pdf']) if pd.notna(row['tamanho_pdf']) else 0,
-                        'paginas_extraidas': int(row['paginas_extraidas']) if pd.notna(row['paginas_extraidas']) else 0
+                        'tamanho_pdf': int(row.get('tamanho_pdf', 0)) if (('tamanho_pdf' in row.index) and pd.notna(row.get('tamanho_pdf'))) else 0,
+                        'paginas_extraidas': int(row.get('paginas_extraidas', 0)) if (('paginas_extraidas' in row.index) and pd.notna(row.get('paginas_extraidas'))) else 0
                     }
                     
                     # Criar texto combinado para busca
                     texto_completo = f"""
                     TÍTULO: {row['titulo']}
-                    ASSUNTO: {row['assunto']}
-                    CONTEÚDO: {row['conteudo_pdf']}
+                    ASSUNTO: {metadata.get('assunto','')}
+                    CONTEÚDO: {row[text_col]}
                     """.strip()
                     
                     # Dividir em chunks
@@ -371,7 +450,8 @@ class VectorStoreANTAQ:
                     
                     # Atualizar status de vetorização individualmente
                     if incremental:
-                        self._atualizar_status_vetorizacao(parquet_path, [row['codigo_registro']])
+                        if not is_wiki_js:
+                            self._atualizar_status_vetorizacao(parquet_path, [row['codigo_registro']])
                     
                     # Log da norma sendo processada
                     logger.info(f"📄 Processado e salvo: {row['titulo']} (Código: {row['codigo_registro']}) - {len(documents)} chunks")
@@ -421,7 +501,11 @@ class VectorStoreANTAQ:
         """
         
         try:
-            collection = self.client.get_collection(self.collection_name)
+            # Se coleção ativa definida, consultar apenas nela; caso contrário, consultar em todas
+            if self.collection_name:
+                collections_to_query = [self.client.get_collection(self.collection_name)]
+            else:
+                collections_to_query = self.client.list_collections()
             
             # Gerar embedding da consulta
             query_embedding = self._generate_embedding(query)
@@ -433,38 +517,55 @@ class VectorStoreANTAQ:
                     if value is not None:
                         where[key] = value
             
-            # Realizar busca
-            results = collection.query(
-                query_embeddings=[query_embedding],
-                n_results=n_results,
-                where=where if where else None,
-                include=['documents', 'metadatas', 'distances']
-            )
-            
-            # Formatar resultados
-            formatted_results = []
-            for i in range(len(results['documents'][0])):
-                formatted_results.append({
-                    'document': results['documents'][0][i],
-                    'metadata': results['metadatas'][0][i],
-                    'similarity': 1 - results['distances'][0][i],  # Converter distância para similaridade
-                    'distance': results['distances'][0][i]
-                })
-            
-            return formatted_results
+            # Realizar busca em todas as coleções selecionadas e mesclar resultados
+            merged_results = []
+            for collection in collections_to_query:
+                try:
+                    results = collection.query(
+                        query_embeddings=[query_embedding],
+                        n_results=n_results,
+                        where=where if where else None,
+                        include=['documents', 'metadatas', 'distances']
+                    )
+                    for i in range(len(results['documents'][0])):
+                        merged_results.append({
+                            'document': results['documents'][0][i],
+                            'metadata': results['metadatas'][0][i],
+                            'similarity': 1 - results['distances'][0][i],
+                            'distance': results['distances'][0][i]
+                        })
+                except Exception as inner_e:
+                    logger.warning(f"Falha ao consultar coleção {getattr(collection, 'name', 'desconhecida')}: {inner_e}")
+                    continue
+
+            # Ordenar por similaridade e retornar top n_results
+            merged_results.sort(key=lambda x: x['similarity'], reverse=True)
+            return merged_results[:n_results]
             
         except Exception as e:
             logger.error(f"Erro na busca: {e}")
             return []
     
     def get_collection_stats(self) -> Dict[str, Any]:
-        """Obtém estatísticas da coleção"""
+        """Obtém estatísticas das coleções (agregado se houver múltiplas)."""
         try:
-            collection = self.client.get_collection(self.collection_name)
-            count = collection.count()
-            
-            # Obter todos os metadados para análise completa
-            all_data = collection.get(limit=count, include=['metadatas'])
+            if self.collection_name:
+                collections = [self.client.get_collection(self.collection_name)]
+            else:
+                collections = self.client.list_collections()
+
+            total_count = 0
+            all_metadatas = []
+            for collection in collections:
+                try:
+                    count = collection.count()
+                    total_count += count
+                    if count > 0:
+                        data = collection.get(limit=count, include=['metadatas'])
+                        all_metadatas.extend(data.get('metadatas', []))
+                except Exception as inner_e:
+                    logger.warning(f"Falha ao obter stats da coleção {getattr(collection, 'name', 'desconhecida')}: {inner_e}")
+                    continue
             
             # Análise dos metadados
             autores = {}
@@ -474,7 +575,7 @@ class VectorStoreANTAQ:
             situacoes = {}
             normas_unicas = set()
             
-            for meta in all_data['metadatas']:
+            for meta in all_metadatas:
                 # Contagem de normas únicas
                 codigo_registro = meta.get('codigo_registro', '')
                 if codigo_registro:
@@ -519,7 +620,7 @@ class VectorStoreANTAQ:
                 situacoes[situacao] = situacoes.get(situacao, 0) + 1
             
             return {
-                'total_chunks': count,
+                'total_chunks': total_count,
                 'total_normas_unicas': len(normas_unicas),
                 'top_autores': dict(list(sorted(autores.items(), key=lambda x: x[1], reverse=True))[:10]),
                 'top_assuntos': dict(list(sorted(assuntos.items(), key=lambda x: x[1], reverse=True))[:10]),
@@ -531,6 +632,36 @@ class VectorStoreANTAQ:
         except Exception as e:
             logger.error(f"Erro ao obter estatísticas: {e}")
             return {'error': str(e)}
+
+    def list_collections_with_counts(self) -> List[Tuple[str, int]]:
+        """Lista coleções disponíveis com seus tamanhos."""
+        try:
+            cols = self.client.list_collections()
+            data: List[Tuple[str, int]] = []
+            for c in cols:
+                try:
+                    data.append((c.name, c.count()))
+                except Exception:
+                    data.append((c.name, 0))
+            return sorted(data, key=lambda x: x[1], reverse=True)
+        except Exception as e:
+            logger.error(f"Erro ao listar coleções: {e}")
+            return []
+
+    def get_total_documents_count(self) -> int:
+        """Retorna a soma de documentos em todas as coleções relevantes."""
+        try:
+            if self.collection_name:
+                return self.client.get_collection(self.collection_name).count()
+            total = 0
+            for c in self.client.list_collections():
+                try:
+                    total += c.count()
+                except Exception:
+                    continue
+            return total
+        except Exception:
+            return 0
     
     def get_vetorizacao_stats(self, parquet_path: str) -> Dict[str, Any]:
         """

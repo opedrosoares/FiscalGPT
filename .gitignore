@@ -64,3 +64,6 @@ tmp/
 
 # ChromaDB - Banco vetorial
 chroma_db/
+*.db
+*.txt
+.env.bak

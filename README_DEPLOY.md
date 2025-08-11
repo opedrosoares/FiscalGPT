@@ -18,7 +18,7 @@ Este projeto foi configurado para deploy no Streamlit Cloud com múltiplas cole�
 
 ### 3. Estrutura do Projeto
 ```
-SophiaBot/
+FiscalGPT/
 ├── chatbot/           # Código principal
 │   ├── core/         # Sistema RAG e Vector Store
 │   ├── config/       # Configurações

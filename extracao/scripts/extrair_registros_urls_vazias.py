@@ -205,7 +205,7 @@ class SophiaIndividualExtractor:
         Tenta extrair conteúdo do PDF se disponível
         """
         try:
-            from Scrap import PDFExtractor
+            from extracao.sophia_web.core.extrator import PDFExtractor
             pdf_extractor = PDFExtractor(self.session, timeout=30)
             resultado = pdf_extractor.extract_pdf_content(pdf_url)
             

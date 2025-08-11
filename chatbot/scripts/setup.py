@@ -95,7 +95,7 @@ class ChatbotSetup:
         print("📂 Criando diretórios...")
         
         directories = [
-            self.chatbot_dir / 'chroma_db',
+            self.project_root / 'chroma_db',
             self.project_root / 'logs',
             self.project_root / 'exports'
         ]

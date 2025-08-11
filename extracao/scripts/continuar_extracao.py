@@ -3,7 +3,7 @@
 Script simplificado para continuar extração de 2004 a 2024
 """
 
-from Scrap import SophiaANTAQScraper
+from extracao.sophia_web.core.extrator import SophiaANTAQScraper
 import time
 import os
 import pandas as pd

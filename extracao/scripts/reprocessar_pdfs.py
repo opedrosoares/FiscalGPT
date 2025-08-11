@@ -10,7 +10,7 @@ import time
 import logging
 from urllib.parse import urljoin, urlparse
 import os
-from Scrap import PDFExtractor, SophiaANTAQScraper
+from extracao.sophia_web.core.extrator import PDFExtractor, SophiaANTAQScraper
 
 # Configuração de logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')

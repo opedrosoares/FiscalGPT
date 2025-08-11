@@ -1,10 +1,10 @@
 #!/bin/bash
-# Script de instalação do SophiaBot para CentOS 8.5.2111
+# Script de instalação do FiscalGPT para CentOS 8.5.2111
 # Execute como root ou com sudo
 
 set -e  # Parar em caso de erro
 
-echo "🚀 Instalando SophiaBot no CentOS 8.5.2111..."
+echo "🚀 Instalando FiscalGPT no CentOS 8.5.2111..."
 
 # Cores para output
 RED='\033[0;31m'
@@ -80,11 +80,11 @@ pip install --upgrade pip setuptools wheel
 
 # Clonar repositório
 cd ~
-if [ ! -d "SophiaBot" ]; then
-    git clone https://github.com/opedrosoares/SophiaBot.git
+if [ ! -d "FiscalGPT" ]; then
+    git clone https://github.com/opedrosoares/FiscalGPT.git
 fi
 
-cd SophiaBot
+cd FiscalGPT
 
 # Instalar dependências com versões compatíveis
 print_status "Instalando dependências..."
@@ -138,14 +138,14 @@ firewall-cmd --reload
 print_status "Criando serviço systemd..."
 cat > /etc/systemd/system/sophiabot.service << 'EOF'
 [Unit]
-Description=SophiaBot ANTAQ Chatbot
+Description=FiscalGPT ANTAQ Chatbot
 After=network.target
 
 [Service]
 Type=simple
 User=sophiabot
 Group=sophiabot
-WorkingDirectory=/home/sophiabot/SophiaBot
+WorkingDirectory=/home/sophiabot/FiscalGPT
 Environment=PATH=/home/sophiabot/sophiabot_env/bin
 ExecStart=/home/sophiabot/sophiabot_env/bin/streamlit run chatbot/interface/streamlit_app.py --server.port 8501 --server.address 0.0.0.0
 Restart=always
@@ -164,10 +164,10 @@ systemctl enable sophiabot
 print_status "Criando script de backup..."
 cat > /home/sophiabot/backup_sophiabot.sh << 'EOF'
 #!/bin/bash
-# Backup do SophiaBot
+# Backup do FiscalGPT
 DATE=$(date +%Y%m%d_%H%M%S)
 BACKUP_DIR="/home/sophiabot/backups"
-SOURCE_DIR="/home/sophiabot/SophiaBot"
+SOURCE_DIR="/home/sophiabot/FiscalGPT"
 
 mkdir -p $BACKUP_DIR
 tar -czf $BACKUP_DIR/sophiabot_backup_$DATE.tar.gz -C $SOURCE_DIR .
@@ -181,8 +181,8 @@ chown sophiabot:sophiabot /home/sophiabot/backup_sophiabot.sh
 
 # Passo 12: Configurar permissões
 print_status "Configurando permissões..."
-chown -R sophiabot:sophiabot /home/sophiabot/SophiaBot
-chmod -R 755 /home/sophiabot/SophiaBot
+chown -R sophiabot:sophiabot /home/sophiabot/FiscalGPT
+chmod -R 755 /home/sophiabot/FiscalGPT
 
 # Passo 13: Instalar Nginx (opcional)
 read -p "Deseja instalar Nginx como proxy reverso? (y/n): " -n 1 -r
@@ -217,14 +217,14 @@ EOF
 fi
 
 # Passo 14: Iniciar serviço
-print_status "Iniciando serviço SophiaBot..."
+print_status "Iniciando serviço FiscalGPT..."
 systemctl start sophiabot
 
 # Verificar status
 if systemctl is-active --quiet sophiabot; then
-    print_status "✅ SophiaBot iniciado com sucesso!"
+    print_status "✅ FiscalGPT iniciado com sucesso!"
 else
-    print_error "❌ Erro ao iniciar SophiaBot"
+    print_error "❌ Erro ao iniciar FiscalGPT"
     systemctl status sophiabot
 fi
 
@@ -233,7 +233,7 @@ echo
 echo "🎉 Instalação concluída!"
 echo
 echo "📋 Próximos passos:"
-echo "1. Configure sua OPENAI_API_KEY no arquivo /home/sophiabot/SophiaBot/.env"
+echo "1. Configure sua OPENAI_API_KEY no arquivo /home/sophiabot/FiscalGPT/.env"
 echo "2. Acesse o chatbot em: http://$(hostname -I | awk '{print $1}'):8501"
 echo "3. Altere a senha do usuário sophiabot: passwd sophiabot"
 echo "4. Configure backup automático: crontab -e (adicione: 0 2 * * * /home/sophiabot/backup_sophiabot.sh)"

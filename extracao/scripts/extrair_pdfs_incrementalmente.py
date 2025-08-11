@@ -4,7 +4,7 @@ Script para extração incremental de conteúdo de PDFs
 Permite extrair PDFs apenas das normas que ainda não possuem conteúdo extraído
 """
 
-from Scrap import SophiaANTAQScraper, PDFExtractor
+from extracao.sophia_web.core.extrator import SophiaANTAQScraper, PDFExtractor
 import pandas as pd
 import os
 import time

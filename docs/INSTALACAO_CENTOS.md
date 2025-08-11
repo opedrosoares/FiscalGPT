@@ -94,15 +94,15 @@ python3 --version
 
 ```bash
 # Criar usuário para o chatbot (recomendado)
-sudo useradd -m -s /bin/bash sophiabot
-sudo passwd sophiabot
+sudo useradd -m -s /bin/bash fiscalgpt
+sudo passwd fiscalgpt
 
 # Mudar para o usuário
-su - sophiabot
+su - fiscalgpt
 
 # Criar ambiente virtual
-python3 -m venv sophiabot_env
-source sophiabot_env/bin/activate
+python3 -m venv fiscalgpt_env
+source fiscalgpt_env/bin/activate
 
 # Atualizar pip
 pip install --upgrade pip setuptools wheel
@@ -185,7 +185,7 @@ Criar um serviço systemd para executar o chatbot automaticamente:
 
 ```bash
 # Como root
-sudo nano /etc/systemd/system/sophiabot.service
+sudo nano /etc/systemd/system/fiscalgpt.service
 ```
 
 ### Conteúdo do arquivo de serviço:
@@ -216,16 +216,16 @@ WantedBy=multi-user.target
 sudo systemctl daemon-reload
 
 # Habilitar o serviço
-sudo systemctl enable sophiabot
+sudo systemctl enable fiscalgpt
 
 # Iniciar o serviço
-sudo systemctl start sophiabot
+sudo systemctl start fiscalgpt
 
 # Verificar status
-sudo systemctl status sophiabot
+sudo systemctl status fiscalgpt
 
 # Ver logs
-sudo journalctl -u sophiabot -f
+sudo journalctl -u fiscalgpt -f
 ```
 
 ## 🌐 Passo 8: Configuração de Proxy Reverso (Opcional)
@@ -377,7 +377,7 @@ pip install -r requirements/chatbot.txt --no-cache-dir
 ### Problema 3: Porta 8501 não acessível
 ```bash
 # Verificar se o serviço está rodando
-sudo systemctl status sophiabot
+sudo systemctl status fiscalgpt
 
 # Verificar firewall
 sudo firewall-cmd --list-ports
@@ -411,7 +411,7 @@ Após a instalação, verifique se tudo está funcionando:
 
 ```bash
 # Verificar se o serviço está ativo
-sudo systemctl is-active sophiabot
+sudo systemctl is-active fiscalgpt
 
 # Verificar se a porta está aberta
 netstat -tlnp | grep 8501
@@ -427,13 +427,13 @@ sudo journalctl -u sophiabot --no-pager -n 50
 
 ```bash
 # Reiniciar o chatbot
-sudo systemctl restart sophiabot
+sudo systemctl restart fiscalgpt
 
 # Parar o chatbot
-sudo systemctl stop sophiabot
+sudo systemctl stop fiscalgpt
 
 # Ver logs em tempo real
-sudo journalctl -u sophiabot -f
+sudo journalctl -u fiscalgpt -f
 
 # Verificar uso de recursos
 ps aux | grep streamlit

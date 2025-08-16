@@ -62,8 +62,9 @@ tmp/
 # Streamlit
 .streamlit/secrets.toml
 
-# ChromaDB - Banco vetorial
+# Banco vetorial
 chroma_db/
+faiss_db/
 *.db
 *.txt
 .env.bak

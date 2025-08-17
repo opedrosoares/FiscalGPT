@@ -39,10 +39,10 @@ OPENAI_MAX_TOKENS = int(os.getenv('OPENAI_MAX_TOKENS', '1500'))
 # CONFIGURAÇÕES DO BANCO VETORIAL
 # ===============================
 
-# Diretório para persistir o banco ChromaDB
-CHROMA_PERSIST_DIRECTORY = Path(__file__).parent.parent.parent / 'chroma_db'
+# Diretório para persistir o banco FAISS
+CHROMA_PERSIST_DIRECTORY = Path(__file__).parent.parent.parent / 'faiss_db'
 
-# Nome da coleção no ChromaDB (None para auto-detectar/usar múltiplas)
+# Nome da coleção no FAISS (None para auto-detectar/usar múltiplas)
 COLLECTION_NAME = None
 
 # Configurações de embedding

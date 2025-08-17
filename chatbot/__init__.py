@@ -28,7 +28,7 @@ __email__ = "suporte@antaq.gov.br"
 
 # Imports principais
 try:
-    from .core.vector_store import VectorStoreANTAQ
+    from .core.vector_store_faiss import VectorStoreANTAQ
     from .core.rag_system import RAGSystemANTAQ, ChatMessage
     
     __all__ = [

@@ -21,7 +21,7 @@ def vetorizar_base_completa():
     # Importar configurações do config
     try:
         from chatbot.config.config import OPENAI_API_KEY, CHROMA_PERSIST_DIRECTORY
-        from chatbot.core.vector_store import VectorStoreANTAQ
+        from chatbot.core.vector_store_faiss import VectorStoreANTAQ
     except ImportError as e:
         print(f"❌ Erro ao importar configurações do chatbot: {e}")
         print("   Verifique se o arquivo chatbot/config/config.py existe")

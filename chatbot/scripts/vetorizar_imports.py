@@ -21,7 +21,7 @@ def main():
         sys.path.insert(0, str(project_root))
 
     from chatbot.config.config import OPENAI_API_KEY, CHROMA_PERSIST_DIRECTORY
-    from chatbot.core.vector_store import VectorStoreANTAQ
+    from chatbot.core.vector_store_faiss import VectorStoreANTAQ
 
     parser = argparse.ArgumentParser(description="Vetorização dos imports em nova coleção")
     parser.add_argument(

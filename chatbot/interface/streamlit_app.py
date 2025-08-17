@@ -32,7 +32,7 @@ project_root = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(project_root))
 
 # Importações dos módulos do chatbot
-from chatbot.core.vector_store import VectorStoreANTAQ
+from chatbot.core.vector_store_faiss import VectorStoreANTAQ
 from chatbot.core.rag_system import RAGSystemANTAQ
 from chatbot.config.config import OPENAI_API_KEY, OPENAI_MODEL, CHROMA_PERSIST_DIRECTORY, DATA_PATH
 from chatbot.core.local_db import LocalDB

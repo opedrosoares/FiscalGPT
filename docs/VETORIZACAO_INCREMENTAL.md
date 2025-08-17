@@ -2,7 +2,7 @@
 
 ## Visão Geral
 
-O sistema de vetorização incremental permite processar apenas as normas que ainda não foram vetorizadas no banco ChromaDB, otimizando o tempo de processamento e evitando reprocessamento desnecessário.
+O sistema de vetorização incremental permite processar apenas as normas que ainda não foram vetorizadas no banco FAISS, otimizando o tempo de processamento e evitando reprocessamento desnecessário.
 
 ## Funcionalidades Implementadas
 

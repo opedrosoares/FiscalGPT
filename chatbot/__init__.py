@@ -6,7 +6,7 @@ Este pacote contém um sistema completo de RAG (Retrieval-Augmented Generation)
 para consultas sobre normas da Agência Nacional de Transportes Aquaviários.
 
 Módulos principais:
-- vector_store: Gerenciamento do banco vetorial ChromaDB
+- vector_store_faiss: Gerenciamento do banco vetorial FAISS
 - rag_system: Sistema RAG principal
 - app: Interface Streamlit
 - config: Configurações do sistema

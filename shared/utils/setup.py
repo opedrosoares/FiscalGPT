@@ -265,7 +265,7 @@ except ImportError as e:
                 try:
                     import openai
                     import streamlit
-                    import chromadb
+                    import faiss
                     print("✅ Bibliotecas do chatbot importadas com sucesso!")
                 except ImportError as e:
                     print(f"⚠️ Aviso: Algumas bibliotecas do chatbot ausentes: {e}")

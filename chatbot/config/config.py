@@ -40,7 +40,7 @@ OPENAI_MAX_TOKENS = int(os.getenv('OPENAI_MAX_TOKENS', '1500'))
 # ===============================
 
 # Diretório para persistir o banco FAISS
-CHROMA_PERSIST_DIRECTORY = Path(__file__).parent.parent.parent / 'faiss_db'
+FAISS_PERSIST_DIRECTORY = Path(__file__).parent.parent.parent / 'faiss_db'
 
 # Nome da coleção no FAISS (None para auto-detectar/usar múltiplas)
 COLLECTION_NAME = None
@@ -136,9 +136,9 @@ def validate_config():
     if not OPENAI_MODEL:
         errors.append("OPENAI_MODEL não configurado")
     
-    # Validar diretório do ChromaDB
-    if not CHROMA_PERSIST_DIRECTORY:
-        errors.append("CHROMA_PERSIST_DIRECTORY não configurado")
+    # Validar diretório do FAISS
+    if not FAISS_PERSIST_DIRECTORY:
+        errors.append("FAISS_PERSIST_DIRECTORY não configurado")
     
     # Validar porta do Streamlit
     if not isinstance(STREAMLIT_SERVER_PORT, int) or STREAMLIT_SERVER_PORT <= 0:

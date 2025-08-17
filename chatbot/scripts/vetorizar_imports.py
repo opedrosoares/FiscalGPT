@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Vetoriza o Parquet gerado a partir de shared/imports em uma nova coleção ChromaDB.
+Vetoriza o Parquet gerado a partir de shared/imports em uma nova coleção FAISS.
 
 Uso típico:
   python -m chatbot.scripts.vetorizar_imports \
@@ -20,7 +20,7 @@ def main():
     if str(project_root) not in sys.path:
         sys.path.insert(0, str(project_root))
 
-    from chatbot.config.config import OPENAI_API_KEY, CHROMA_PERSIST_DIRECTORY
+    from chatbot.config.config import OPENAI_API_KEY, FAISS_PERSIST_DIRECTORY
     from chatbot.core.vector_store_faiss import VectorStoreANTAQ
 
     parser = argparse.ArgumentParser(description="Vetorização dos imports em nova coleção")
@@ -61,7 +61,7 @@ def main():
     print("🚀 Inicializando VectorStore...")
     vs = VectorStoreANTAQ(
         openai_api_key=OPENAI_API_KEY,
-        persist_directory=str(CHROMA_PERSIST_DIRECTORY),
+        persist_directory=str(FAISS_PERSIST_DIRECTORY),
         collection_name=None,  # forçamos escolha adiante
     )
 

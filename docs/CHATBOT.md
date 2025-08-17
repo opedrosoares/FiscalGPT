@@ -15,7 +15,7 @@ O módulo chatbot oferece:
 ```
 chatbot/
 ├── core/                            # 🧠 Sistema RAG
-│   ├── vector_store.py              # Banco vetorial ChromaDB
+│   ├── vector_store_faiss.py        # Banco vetorial FAISS
 │   ├── rag_system.py                # Sistema RAG principal
 │   └── embedding_utils.py           # Utilitários de embeddings
 ├── interface/                       # 🎨 Interface de usuário
@@ -150,7 +150,7 @@ Pergunta do Usuário
 
 ### Componentes Principais
 
-#### 1. Vector Store (ChromaDB)
+#### 1. Vector Store (FAISS)
 - **18.381+ normas** processadas
 - **50.000+ chunks** vetoriais (estimado)
 - **Embeddings 1536D** (text-embedding-3-small)
@@ -265,7 +265,7 @@ cp chatbot/config/settings_example.py chatbot/config/settings.py
 # Adicionar OPENAI_API_KEY = 'sk-...'
 ```
 
-#### ❌ "Coleção ChromaDB vazia"
+#### ❌ "Coleção FAISS vazia"
 **Solução**:
 ```bash
 # Reprocessar dados
@@ -392,7 +392,7 @@ print(f"Duração da sessão: {data['session_duration']}")
 
 ### Antes do Deploy
 - [ ] Configurar OPENAI_API_KEY
-- [ ] Testar conexão com ChromaDB
+- [ ] Testar conexão com FAISS
 - [ ] Validar dados processados
 - [ ] Configurar limites de rate
 - [ ] Definir porta da aplicação

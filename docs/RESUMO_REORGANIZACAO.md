@@ -25,7 +25,7 @@ Sophia/
 │       └── testar_estrutura.py    # Teste de estrutura
 ├── 🤖 chatbot/                    # Módulo do chatbot
 │   ├── core/                      # Sistema RAG
-│   │   ├── vector_store.py        # Banco vetorial ChromaDB
+│   │   ├── vector_store_faiss.py  # Banco vetorial FAISS
 │   │   └── rag_system.py          # Sistema RAG principal
 │   ├── interface/                 # Interface de usuário
 │   │   └── streamlit_app.py       # App Streamlit

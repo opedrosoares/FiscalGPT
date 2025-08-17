@@ -23,7 +23,7 @@ streamlit run interface/streamlit_app.py
 ```
 chatbot/
 ├── core/                    # 🧠 Sistema RAG
-│   ├── vector_store.py      # Banco vetorial ChromaDB
+│   ├── vector_store_faiss.py # Banco vetorial FAISS
 │   └── rag_system.py        # Sistema RAG principal
 ├── interface/               # 🎨 Interface
 │   └── streamlit_app.py     # App Streamlit

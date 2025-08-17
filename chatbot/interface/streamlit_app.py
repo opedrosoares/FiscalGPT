@@ -34,7 +34,7 @@ sys.path.insert(0, str(project_root))
 # Importações dos módulos do chatbot
 from chatbot.core.vector_store_faiss import VectorStoreANTAQ
 from chatbot.core.rag_system import RAGSystemANTAQ
-from chatbot.config.config import OPENAI_API_KEY, OPENAI_MODEL, CHROMA_PERSIST_DIRECTORY, DATA_PATH
+from chatbot.config.config import OPENAI_API_KEY, OPENAI_MODEL, FAISS_PERSIST_DIRECTORY, DATA_PATH
 from chatbot.core.local_db import LocalDB
 
 # Configuração da página
@@ -54,7 +54,7 @@ st.set_page_config(
         
         **Desenvolvido com:**
         - OpenAI GPT-4
-        - ChromaDB (Banco Vetorial)
+        - FAISS (Banco Vetorial)
         - Streamlit
         - Técnicas RAG (Retrieval-Augmented Generation)
         """
@@ -328,7 +328,7 @@ class ChatbotANTAQApp:
                 # Inicializar vector store
                 st.session_state.vector_store = VectorStoreANTAQ(
                     openai_api_key=OPENAI_API_KEY,
-                    persist_directory=str(CHROMA_PERSIST_DIRECTORY)
+                    persist_directory=str(FAISS_PERSIST_DIRECTORY)
                 )
                 # Forçar modo multi-coleção: buscar em todas as coleções coexistentes
                 try:
@@ -336,20 +336,20 @@ class ChatbotANTAQApp:
                 except Exception:
                     pass
                 
-                # Verificar se o ChromaDB já tem dados (considerando múltiplas coleções)
+                # Verificar se o FAISS já tem dados (considerando múltiplas coleções)
                 try:
                     total_docs = st.session_state.vector_store.get_total_documents_count()
                     if total_docs > 0:
-                        # st.success(f"✅ ChromaDB carregado com {total_docs} documentos")
+                        # st.success(f"✅ FAISS carregado com {total_docs} documentos")
                         # Mostrar coleções
                         cols_info = st.session_state.vector_store.list_collections_with_counts()
                         if cols_info:
                             resumo = ", ".join([f"{name}: {count}" for name, count in cols_info[:5]])
                             # st.caption(f"Coleções: {resumo}{' ...' if len(cols_info) > 5 else ''}")
                     else:
-                        st.warning("⚠️ ChromaDB está vazio. Algumas funcionalidades podem não estar disponíveis.")
+                        st.warning("⚠️ FAISS está vazio. Algumas funcionalidades podem não estar disponíveis.")
                 except Exception as e:
-                    st.warning(f"⚠️ Erro ao verificar ChromaDB: {str(e)}")
+                    st.warning(f"⚠️ Erro ao verificar FAISS: {str(e)}")
                     st.info("ℹ️ Continuando sem verificação de dados...")
                 
                 # Inicializar RAG system
@@ -778,7 +778,7 @@ class ChatbotANTAQApp:
         st.markdown("""
         <div style="text-align: center; color: #666;">
             <p>FiscalGPT 2.0 - Sistema Inteligente para Consultas sobre Normas e Procedimentos de Fiscalização da ANTAQ</p>
-            <p>Desenvolvido com OpenAI GPT-4 • ChromaDB • Streamlit</p>
+            <p>Desenvolvido com OpenAI GPT-4 • FAISS • Streamlit</p>
         </div>
         """, unsafe_allow_html=True)
 

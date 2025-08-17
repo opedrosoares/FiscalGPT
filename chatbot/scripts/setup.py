@@ -205,7 +205,7 @@ except Exception as e:
             # Testar imports principais
             import openai
             import streamlit
-            import chromadb
+            import faiss
             import pandas
             
             print("✅ Todas as bibliotecas foram importadas com sucesso!")

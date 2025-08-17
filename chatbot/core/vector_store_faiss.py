@@ -54,8 +54,8 @@ class VectorStoreANTAQ:
         # Resolver diretório de persistência padrão para a raiz do projeto
         if persist_directory is None:
             try:
-                from chatbot.config.config import CHROMA_PERSIST_DIRECTORY as DEFAULT_CHROMA_DIR
-                persist_directory = str(DEFAULT_CHROMA_DIR)
+                from chatbot.config.config import FAISS_PERSIST_DIRECTORY as DEFAULT_FAISS_DIR
+                persist_directory = str(DEFAULT_FAISS_DIR)
             except Exception:
                 persist_directory = str(Path(__file__).parent.parent.parent / 'faiss_db')
 

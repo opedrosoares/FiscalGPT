@@ -97,7 +97,7 @@ python3 vetorizar_base_completa.py
 - `vetorizado`: Boolean (True/False)
 - `ultima_verificacao_vetorizacao`: Timestamp
 
-## Banco Vetorial (ChromaDB)
+## Banco Vetorial (FAISS)
 
 ### Localização
 - **Diretório**: `./chatbot/chroma_db/`

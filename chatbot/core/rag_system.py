@@ -11,7 +11,7 @@ import logging
 from datetime import datetime
 import re
 from dataclasses import dataclass
-from .vector_store import VectorStoreANTAQ
+from .vector_store_faiss import VectorStoreANTAQ
 
 # Configurar logging
 logging.basicConfig(level=logging.INFO)
@@ -597,7 +597,7 @@ Algumas sugestões:
 if __name__ == "__main__":
     # Teste básico
     try:
-        from chatbot.config.config import OPENAI_API_KEY, CHROMA_PERSIST_DIRECTORY
+        from chatbot.config.config import OPENAI_API_KEY, FAISS_PERSIST_DIRECTORY
     except ImportError:
         print("❌ Erro ao importar configurações do chatbot")
         exit(1)
@@ -607,7 +607,7 @@ if __name__ == "__main__":
         exit(1)
     
     # Inicializar sistema
-    vector_store = VectorStoreANTAQ(OPENAI_API_KEY, persist_directory=str(CHROMA_PERSIST_DIRECTORY))
+    vector_store = VectorStoreANTAQ(OPENAI_API_KEY, persist_directory=str(FAISS_PERSIST_DIRECTORY))
     rag_system = RAGSystemANTAQ(OPENAI_API_KEY, vector_store)
     
     # Teste de consulta

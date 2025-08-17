@@ -111,7 +111,7 @@ else
     pip install "tiktoken>=0.5.0,<1.0.0"
     pip install "streamlit>=1.31.0,<2.0.0"
     pip install "streamlit-chat>=0.1.1,<1.0.0"
-    pip install "chromadb>=0.4.22,<1.0.0"
+    pip install "faiss-cpu>=1.7.4"
     pip install "sentence-transformers>=2.2.2,<3.0.0"
     pip install "langchain>=0.1.0,<1.0.0"
     pip install "langchain-openai>=0.0.8,<1.0.0"

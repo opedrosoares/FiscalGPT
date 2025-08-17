@@ -68,3 +68,4 @@ faiss_db/
 *.db
 *.txt
 .env.bak
+venv/

@@ -358,7 +358,7 @@ pip install "numpy>=1.24.0"
 pip install "pyarrow>=14.0.0"
 pip install "streamlit>=1.31.0"
 pip install "openai>=1.12.0"
-pip install "chromadb>=0.4.22"
+pip install "faiss-cpu>=1.7.4"
 ```
 
 #### Erro geral com dependências

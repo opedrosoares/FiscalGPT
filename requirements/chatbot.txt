@@ -8,7 +8,7 @@ streamlit>=1.31.0
 streamlit-chat>=0.1.1
 
 # Banco vetorial e busca
-chromadb>=0.4.22
+faiss-cpu>=1.7.4
 sentence-transformers>=2.2.2
 
 # Processamento de dados

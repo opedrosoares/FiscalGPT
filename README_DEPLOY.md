@@ -1,11 +1,11 @@
 # Chatbot ANTAQ - Deploy Streamlit Cloud
 
-Este projeto foi configurado para deploy no Streamlit Cloud com múltiplas coleções ChromaDB.
+Este projeto foi configurado para deploy no Streamlit Cloud com múltiplas coleções FAISS.
 
 ## 🚀 Deploy no Streamlit Cloud
 
 ### 1. Preparação
-- ✅ Múltiplas coleções ChromaDB criadas (cada uma < 100MB)
+- ✅ Múltiplas coleções FAISS criadas (cada uma < 100MB)
 - ✅ Configurações otimizadas para Streamlit Cloud
 - ✅ Requirements.txt configurado
 
@@ -29,7 +29,7 @@ FiscalGPT/
 └── .streamlit/       # Configurações do Streamlit
 ```
 
-### 4. Coleções ChromaDB
+### 4. Coleções FAISS
 O sistema utiliza múltiplas coleções para manter cada arquivo abaixo de 100MB:
 - `normas_antaq_part_000`: Primeira parte
 - `normas_antaq_part_001`: Segunda parte

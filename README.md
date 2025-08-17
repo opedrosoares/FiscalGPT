@@ -34,7 +34,7 @@ FiscalGPT/
 │   └── README.md                    # Documentação específica
 ├── chatbot/                         # 🤖 Módulo do chatbot
 │   ├── core/                        # Sistema RAG
-│   │   ├── vector_store.py          # Banco vetorial ChromaDB
+│   │   ├── vector_store_faiss.py    # Banco vetorial FAISS
 │   │   └── rag_system.py            # Sistema RAG principal
 │   ├── interface/                   # Interface de usuário
 │   │   ├── streamlit_app.py         # App Streamlit principal
@@ -51,7 +51,7 @@ FiscalGPT/
 │   │   ├── vetorizar_base_completa.py # Vetorização de dados
 │   │   ├── explorar_dados_chatbot.py # Exploração de dados
 │   │   └── verificar_status_vetorizacao.py # Verificar status
-│   ├── chroma_db/                   # Banco vetorial ChromaDB
+│   ├── faiss_db/                    # Banco vetorial FAISS
 │   ├── tests/                       # Testes do chatbot
 │   ├── app.py                       # Aplicação principal
 │   ├── run_chatbot.py               # Script de execução
@@ -204,7 +204,7 @@ O chatbot pode ser configurado através de:
 - ✅ **Scripts especializados** para diferentes cenários
 
 ### Módulo Chatbot
-- ✅ **Sistema RAG completo** com ChromaDB
+- ✅ **Sistema RAG completo** com FAISS
 - ✅ **Interface Streamlit** intuitiva e responsiva
 - ✅ **Busca semântica avançada** com re-ranking
 - ✅ **Suporte a GPT-4.1-nano** para respostas otimizadas
@@ -224,7 +224,7 @@ O chatbot pode ser configurado através de:
 
 ### Chatbot
 - **OpenAI GPT-4.1-nano** - Modelo de linguagem
-- **ChromaDB** - Banco vetorial
+- **FAISS** - Banco vetorial
 - **Streamlit** - Interface web
 - **LangChain** - Framework RAG
 - **text-embedding-3-small** - Embeddings

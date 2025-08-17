@@ -110,7 +110,7 @@ OPENAI_MODEL = 'gpt-4.1-nano'
 OPENAI_TEMPERATURE = 0.1
 
 # Configurações do banco vetorial
-CHROMA_PERSIST_DIRECTORY = Path('./chroma_db')
+FAISS_PERSIST_DIRECTORY = Path('./faiss_db')
 COLLECTION_NAME = 'normas_antaq'
 EMBEDDING_MODEL = 'text-embedding-3-small'
 

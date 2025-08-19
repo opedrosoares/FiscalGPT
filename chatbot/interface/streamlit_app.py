@@ -499,7 +499,11 @@ class ChatbotANTAQApp:
         """Processa uma consulta do usuário"""
         
         try:
-            # Adicionar mensagem do usuário
+            # Mostrar mensagem do usuário imediatamente
+            with st.chat_message("user"):
+                st.markdown(query)
+            
+            # Adicionar mensagem do usuário ao histórico
             st.session_state.messages.append({"role": "user", "content": query})
             
             # Atualizar estatísticas
@@ -674,7 +678,7 @@ class ChatbotANTAQApp:
             else:
                 # Imports: não adicionar link
                 link_href = None
-                link_label = f"{titulo} (Importado)"
+                link_label = f"{titulo}"
             
             # Construir blocos condicionais: Situação/Data somente para sophia
             situacao_html = ""
@@ -688,15 +692,33 @@ class ChatbotANTAQApp:
                 situacao_html = f"<p><strong>Situação:</strong> {situacao_val}</p>"
                 data_html = f"<p><strong>Data:</strong> {data_fmt}</p>"
 
+            # Escapar conteúdo HTML para exibir como texto puro
+            import html
+            assunto_escaped = html.escape(str(assunto)) if assunto else 'N/A'
+            codigo_escaped = html.escape(str(codigo)) if codigo else 'N/A'
+            tipo_material_escaped = html.escape(str(tipo_material)) if tipo_material else 'N/A'
+            
+            # Escapar também o conteúdo das situacao_html e data_html se necessário
+            if 'situacao_html' in locals() and situacao_html:
+                situacao_val_escaped = html.escape(str(source.get('situacao', 'N/A')))
+                situacao_html = f"<p><strong>Situação:</strong> {situacao_val_escaped}</p>"
+                
+            if 'data_html' in locals() and data_html:
+                try:
+                    data_fmt = datetime.strptime(assinatura, '%Y-%m-%d').strftime('%d/%m/%Y') if assinatura not in ['', 'N/A', None] else 'N/A'
+                except Exception:
+                    data_fmt = 'N/A'
+                data_html = f"<p><strong>Data:</strong> {html.escape(str(data_fmt))}</p>"
+            
             st.markdown(f"""
             <div class="source-card">
                 <h5>{i}. {f'<a href="{link_href}" target="_blank">{link_label} ↗️</a>' if link_href else link_label}</h5>
-                <p><strong>Origem:</strong> {tipo_material or 'N/A'}</p>
-                <p><strong>Código:</strong> {codigo}</p>
-                <p><strong>Caminho/Assunto:</strong> {assunto}</p>
+                <p><strong>Origem:</strong> {tipo_material_escaped}</p>
+                <p><strong>Código:</strong> {codigo_escaped}</p>
+                <p><strong>Caminho/Assunto:</strong> {assunto_escaped}</p>
+                <p><strong>Relevância:</strong> {relevance:.1%} {relevance_color}</p>
                 {situacao_html}
                 {data_html}
-                <p><strong>Relevância:</strong>{relevance:.1%} <sup style=\"font-size: 0.5em;margin: 0 .5em;\">{relevance_color}</sup></p>
             </div>
             """, unsafe_allow_html=True)
     

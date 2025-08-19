@@ -253,6 +253,25 @@ Responda sempre em português brasileiro e seja preciso nas citações."""
                 titulo = meta.get('titulo', '')
                 haystack = f"{str(tipo_meta or '')} || {titulo}"
                 H = normalize(haystack)
+                
+                # Verificar tipos de Imports primeiro (prioridade alta)
+                if 'IMPORTS::' in H:
+                    if 'LEIS_DECRETOS' in H:
+                        return 'Lei/Decreto'
+                    elif 'MANUAIS' in H:
+                        return 'Manual'
+                    elif 'DICIONARIOS' in H:
+                        return 'Dicionário'
+                    elif 'PROCESSOS_SANCIONADORES' in H:
+                        return 'Processo Sancionador'
+                    else:
+                        return 'Imports'
+                
+                # Verificar WikiJS
+                if 'WIKIJS' in H:
+                    return 'Wiki'
+                    
+                # Verificar tipos tradicionais de normas
                 if 'RESOLUCAO NORMATIVA' in H:
                     return 'Resolução Normativa'
                 if 'RESOLUCAO' in H:
@@ -269,12 +288,27 @@ Responda sempre em português brasileiro e seja preciso nas citações."""
 
             tipo_norma = detect_doc_type(result.get('metadata', {}))
             tipo_weights = {
+                # Normas principais (maior prioridade)
                 'Resolução': 0.25,
                 'Resolução Normativa': 0.20,
                 'Portaria': 0.15,
                 'Instrução Normativa': 0.10,
                 'Acórdão': 0.05,
+                
+                # Materiais importados (alta prioridade para referência)
+                'Lei/Decreto': 0.30,
+                'Manual': 0.18,
+                'Dicionário': 0.12,
+                'Processo Sancionador': 0.08,
+                'Imports': 0.15,
+                
+                # Wiki (mesma prioridade da Resolução)
+                'Wiki': 0.25,
+                
+                # Outros documentos
                 'Outros': 0.00,
+                
+                # Penalidade para documentos menos relevantes
                 'Termo de Autorização': -0.15,
             }
             tipo_bonus = tipo_weights.get(tipo_norma, 0.0)
